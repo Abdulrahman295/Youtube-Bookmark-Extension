@@ -16,22 +16,22 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "../src/images/bookmark.png",
-        "../src/images/play.png",
-        "../src/images/delete.png",
-        "../src/images/save.png"
+        "assets/bookmark.png",
+        "assets/play.png",
+        "assets/delete.png",
+        "assets/images/save.png"
       ],
       "matches": ["https://*.youtube.com/*"]
     }
   ],
   "action": {
     "default_icon": {
-      "16": "ext-icon.png",
-      "24": "ext-icon.png",
-      "32": "ext-icon.png"
+      "16": "assets/ext-icon.png",
+      "24": "assets/ext-icon.png",
+      "32": "assets/ext-icon.png"
     },
     "default_title": "My YT Bookmarks",
-    "default_popup": "../index.html"
+    "default_popup": "index.html"
   },
   "manifest_version": 3
 }
