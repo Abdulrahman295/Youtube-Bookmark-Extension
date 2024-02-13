@@ -31,7 +31,7 @@ chrome.tabs.onUpdated.addListener((tabId, tab) => {
 
 chrome.webNavigation.onCommitted.addListener(async (details) => {
   if (
-    details.transitionType === "reload" &&
+    ["reload", "link", "typed", "generated"].includes(details.transitionType)&&
     details.url.includes("youtube.com/watch")
   ) {
     const videoUrl = new URL(details.url);
