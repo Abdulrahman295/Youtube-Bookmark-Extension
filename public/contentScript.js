@@ -74,8 +74,15 @@ const appendBookmarkBtn = (btn) => {
 const fetchBookmarks = async () => {
   return new Promise((resolve) => {
     chrome.storage.sync.get([currentVideoId], (result) => {
-      console.log(result);
-      resolve(result[currentVideoId] ? JSON.parse(result[currentVideoId]) : []);
+      if (result[currentVideoId]) {
+        result[currentVideoId] = JSON.parse(result[currentVideoId]);
+        result[currentVideoId].forEach((bkm) => {
+          bkm.time = parseFloat(bkm.time);
+        });
+        resolve(result[currentVideoId]);
+      } else {
+        resolve([]);
+      }
     });
   });
 };
@@ -90,15 +97,15 @@ const addNewBookmark = async () => {
   };
   console.log(currentVideoId);
   currentBookmarks = await fetchBookmarks();
-
+  currentBookmarks.push(newBookmark);
+  currentBookmarks.sort((a, b) => a.time - b.time);
   chrome.storage.sync
     .set({
-      [currentVideoId]: JSON.stringify(
-        [...currentBookmarks, newBookmark].sort((a, b) => a.time - b.time)
-      ),
+      [currentVideoId]: JSON.stringify(currentBookmarks),
     })
     .then(() => {
       console.log("bookmark saved successfully!");
+      console.log("current bookmarks: " + currentBookmarks);
     });
 
   console.log(newBookmark);
@@ -106,11 +113,11 @@ const addNewBookmark = async () => {
 
 const deleteBookmark = (targetTime) => {
   currentBookmarks = currentBookmarks.filter((bkm) => bkm.time !== targetTime);
+  currentBookmarks.sort((a, b) => a.time - b.time);
+  console.log(currentBookmarks);
   chrome.storage.sync
     .set({
-      [currentVideoId]: JSON.stringify(
-        currentBookmarks.sort((a, b) => a.time - b.time)
-      ),
+      [currentVideoId]: JSON.stringify(currentBookmarks),
     })
     .then(() => {
       console.log("bookmarks updated successfully!");
@@ -139,17 +146,13 @@ const editBookmark = (targetTime, newContent) => {
     .then(() => {
       console.log("bookmarks updated successfully!");
     });
+
+  editMarkerAt(targetTime, newContent);
 };
 
-const formatTime = (seconds) => {
-  let date = new Date(0);
-  date.setSeconds(seconds);
-  return date.toISOString().substring(11, 19);
-};
-
-const getSeconds = (time) => {
-  let [hours, minutes, seconds] = time.split(":");
-  return parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds);
+const editMarkerAt = (targetTime, newContent) => {
+  const targetMarker = progressBar.querySelector(`[id="marker-${targetTime}"]`);
+  targetMarker.title = newContent;
 };
 
 const insertMarkerAt = (currentTime, content) => {
@@ -162,9 +165,7 @@ const insertMarkerAt = (currentTime, content) => {
   marker.style.backgroundColor = "yellow";
   marker.style.position = "absolute";
   marker.style.zIndex = "1000";
-  marker.style.left = `${
-    (currentTime / player.duration) * progressBar.offsetWidth
-  }px`;
+  marker.style.left = `${(currentTime.toFixed(3) / player.duration) * 100}%`;
   marker.title = content;
   marker.style.cursor = "pointer";
   marker.id = "marker-" + currentTime;
@@ -174,7 +175,6 @@ const insertMarkerAt = (currentTime, content) => {
 
 const renderMarkers = async () => {
   currentBookmarks = await fetchBookmarks();
-  console.log(currentBookmarks);
   currentBookmarks.forEach((bookmark) => {
     insertMarkerAt(bookmark.time, bookmark.content);
   });

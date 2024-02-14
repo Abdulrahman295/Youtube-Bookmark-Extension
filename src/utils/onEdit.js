@@ -16,7 +16,11 @@ export async function onEdit(e) {
 
     chrome.tabs.sendMessage(
       activeTab.id,
-      { type: "EDIT", bkmTime: bookmarkTime, newContent: newContent },
+      {
+        type: "EDIT",
+        bkmTime: parseFloat(bookmarkTime),
+        newContent: newContent,
+      },
       (response) => {
         if (response) console.log(response.message);
       }

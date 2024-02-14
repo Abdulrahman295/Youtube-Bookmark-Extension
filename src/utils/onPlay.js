@@ -5,7 +5,7 @@ export async function onPlay(e) {
   const activeTab = await getActiveTab();
   chrome.tabs.sendMessage(
     activeTab.id,
-    { type: "PLAY", bkmTime: bookmarkTime },
+    { type: "PLAY", bkmTime: parseFloat(bookmarkTime) },
     (response) => {
       if (response) console.log(response.message);
     }
