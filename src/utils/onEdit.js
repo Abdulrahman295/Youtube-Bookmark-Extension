@@ -3,7 +3,8 @@ import { getActiveTab } from "./getActiveTab";
 export async function onEdit(e) {
   const newContent = prompt("Enter a new note for this bookmark");
 
-  const bookmarkTime = e.target.parentNode.parentNode.getAttribute("data-time");
+  const bookmarkTime =
+    e.target.parentNode.parentNode.parentNode.getAttribute("data-time");
   const bookmarkElm = document.getElementById("bookmark-" + bookmarkTime);
 
   const activeTab = await getActiveTab();

@@ -1,7 +1,9 @@
 import { getActiveTab } from "./getActiveTab";
 
 export async function onDelete(e) {
-  const bookmarkTime = e.target.parentNode.parentNode.getAttribute("data-time");
+  console.log("on Delete clicked!");
+  const bookmarkTime =
+    e.target.parentNode.parentNode.parentNode.getAttribute("data-time");
   const bookmarkElm = document.getElementById("bookmark-" + bookmarkTime);
   console.log(bookmarkElm);
   bookmarkElm.parentNode.removeChild(bookmarkElm);

@@ -15,6 +15,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   } else {
     const bookmarkContainer = document.getElementsByClassName("container")[0];
-    bookmarkContainer.innerHTML = `<div class="title"> This is not a Youtube page. </div>`;
+    bookmarkContainer.innerHTML = `<div class="title"> This is not a Youtube Video page. </div>`;
   }
 });

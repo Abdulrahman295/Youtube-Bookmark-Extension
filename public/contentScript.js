@@ -1,23 +1,18 @@
 console.log("contentScript.js loaded");
 
-let leftControls = document.getElementsByClassName("ytp-left-controls")[0];
-let player = document.getElementsByClassName("video-stream")[0];
-let progressBar = document.getElementsByClassName(
-  "ytp-progress-bar-container"
-)[0];
+let player;
+let progressBar;
 let currentVideoId;
 let currentBookmarks = [];
 
 chrome.runtime.onMessage.addListener((obj, sender, sendResponse) => {
-  console.log("message arrived at content script");
+  console.log("message received at content script");
   const { type, bkmTime, videoId, newContent } = obj;
   if (type === "NEW") {
-    currentVideoId = videoId;
-    clearProgressBar();
-    newVideoLoaded();
+    handleNewVideoLoaded(videoId);
   }
   if (type === "PLAY") {
-    player.currentTime = bkmTime;
+    setCurrentTime(bkmTime);
   }
   if (type === "DELETE") {
     deleteBookmark(bkmTime);
@@ -30,22 +25,29 @@ chrome.runtime.onMessage.addListener((obj, sender, sendResponse) => {
 });
 
 const clearProgressBar = () => {
-  progressBar = document.getElementsByClassName(
-    "ytp-progress-bar-container"
-  )[0];
-
+  progressBar = getProgressBar();
   const markers = progressBar.querySelectorAll(".marker");
   markers.forEach((mrkr) => progressBar.removeChild(mrkr));
 };
 
-const newVideoLoaded = async () => {
+const setCurrentTime = (time) => {
+  player = getPlayer();
+  player.currentTime = time;
+};
+
+const handleNewVideoLoaded = async (videoId) => {
+  currentVideoId = videoId;
+  appendBookmarkBtn();
+  renderMarkers();
+};
+
+const appendBookmarkBtn = () => {
   let bookmarkBtnExists = document.getElementsByClassName("bookmark-btn")[0];
   if (!bookmarkBtnExists) {
     let bookmarkBtn = createBookmarkBtn();
-    appendBookmarkBtn(bookmarkBtn);
-    bookmarkBtn.addEventListener("click", addNewBookmark);
+    document.querySelector(".ytp-left-controls").appendChild(bookmarkBtn);
+    bookmarkBtn.addEventListener("click", handleBookmarkButtonClick);
   }
-  renderMarkers();
 };
 
 const createBookmarkBtn = () => {
@@ -65,12 +67,6 @@ const createBookmarkBtn = () => {
   return bookmarkBtn;
 };
 
-const appendBookmarkBtn = (btn) => {
-  leftControls = document.getElementsByClassName("ytp-left-controls")[0];
-  player = document.getElementsByClassName("video-stream")[0];
-  leftControls.appendChild(btn);
-};
-
 const fetchBookmarks = async () => {
   return new Promise((resolve) => {
     chrome.storage.sync.get([currentVideoId], (result) => {
@@ -87,17 +83,27 @@ const fetchBookmarks = async () => {
   });
 };
 
-const addNewBookmark = async () => {
+const handleBookmarkButtonClick = async () => {
+  const newBookmark = createNewBookmarkObj();
+  insertMarkerAt(newBookmark.time, newBookmark.content);
+  saveBookmark(newBookmark);
+};
+
+const createNewBookmarkObj = () => {
+  player = getPlayer();
   let currentTime = player.currentTime;
   let content = prompt("Enter a note for this bookmark");
-  insertMarkerAt(currentTime, content);
   let newBookmark = {
     time: currentTime,
     content: content ? content : "",
   };
-  console.log(currentVideoId);
+
+  return newBookmark;
+};
+
+const saveBookmark = async (bkm) => {
   currentBookmarks = await fetchBookmarks();
-  currentBookmarks.push(newBookmark);
+  currentBookmarks.push(bkm);
   currentBookmarks.sort((a, b) => a.time - b.time);
   chrome.storage.sync
     .set({
@@ -105,10 +111,7 @@ const addNewBookmark = async () => {
     })
     .then(() => {
       console.log("bookmark saved successfully!");
-      console.log("current bookmarks: " + currentBookmarks);
     });
-
-  console.log(newBookmark);
 };
 
 const deleteBookmark = (targetTime) => {
@@ -127,6 +130,7 @@ const deleteBookmark = (targetTime) => {
 };
 
 const deleteMarkerAt = (targetTime) => {
+  progressBar = getProgressBar();
   const targetMarker = progressBar.querySelector(`[id="marker-${targetTime}"]`);
   console.log(targetMarker);
   targetMarker.parentNode.removeChild(targetMarker);
@@ -151,14 +155,14 @@ const editBookmark = (targetTime, newContent) => {
 };
 
 const editMarkerAt = (targetTime, newContent) => {
+  progressBar = getProgressBar();
   const targetMarker = progressBar.querySelector(`[id="marker-${targetTime}"]`);
   targetMarker.title = newContent;
 };
 
 const insertMarkerAt = (currentTime, content) => {
-  progressBar = document.getElementsByClassName(
-    "ytp-progress-bar-container"
-  )[0];
+  player = getPlayer();
+  progressBar = getProgressBar();
   let marker = document.createElement("div");
   marker.style.width = "7px";
   marker.style.height = "100%";
@@ -174,8 +178,22 @@ const insertMarkerAt = (currentTime, content) => {
 };
 
 const renderMarkers = async () => {
+  clearProgressBar();
   currentBookmarks = await fetchBookmarks();
   currentBookmarks.forEach((bookmark) => {
     insertMarkerAt(bookmark.time, bookmark.content);
   });
+};
+
+const getPlayer = () => {
+  if (!player) return document.getElementsByClassName("video-stream")[0];
+
+  return player;
+};
+
+const getProgressBar = () => {
+  if (!progressBar)
+    return document.getElementsByClassName("ytp-progress-bar-container")[0];
+
+  return progressBar;
 };
