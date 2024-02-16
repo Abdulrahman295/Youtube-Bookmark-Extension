@@ -1,6 +1,6 @@
 # Youtube Bookmark Extension
 
-This Chrome extension allows users to take notes while watching YouTube videos, enhancing their viewing experience by enabling them to save, delete, and edit notes, and also have the ability to play the video from the exact time a note was taken.
+📝This Chrome extension allows users to take notes while watching YouTube videos, enhancing their viewing experience by enabling them to save, delete, and edit notes, and also have the ability to play the video from the exact time a note was taken.
 
 ## Features
 
@@ -18,7 +18,7 @@ To install this Chrome extension, follow these steps:
 1. Clone the repository:
 
     ```bash
-    git clone [https://github.com/yourusername/youtube-notes-extension.git](https://github.com/Abdulrahman295/Youtube-Bookmark-Extension.git)
+    git clone https://github.com/Abdulrahman295/Youtube-Bookmark-Extension.git
     ```
 
 2. Navigate to the project directory:
